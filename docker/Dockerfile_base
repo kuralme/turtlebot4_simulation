@@ -1,0 +1,32 @@
+FROM ros:jazzy-ros-base-noble
+SHELL ["/bin/bash", "-c"]
+
+# Install essentials
+RUN apt update && apt install -y \
+    build-essential  \
+    git gfortran wget patch pkg-config\
+    python3-vcstool \
+    liblapack-dev \
+    libmetis-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install ASL
+RUN git clone https://github.com/coin-or-tools/ThirdParty-ASL.git \
+    && cd ThirdParty-ASL \
+    && ./get.ASL && ./configure \
+    && make && make install \
+    && cd / && rm -rf ThirdParty-ASL
+
+# Install IPOPT
+RUN git clone https://github.com/coin-or/Ipopt.git \
+    && mkdir -p Ipopt/build \
+    && cd Ipopt/build \
+    && ../configure \
+    && make && make install \
+    && cd / && rm -rf Ipopt
+
+# Install CppAD
+RUN git clone https://github.com/coin-or/CppAD.git \
+    && mkdir -p CppAD/build && cd CppAD/build \
+    && cmake .. && make && make install \
+    && cd / && rm -rf CppAD

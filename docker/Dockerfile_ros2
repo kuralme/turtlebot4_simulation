@@ -1,0 +1,28 @@
+FROM tb4_simulation_base
+SHELL ["/bin/bash", "-c"]
+
+RUN apt update && apt upgrade -y && apt install -y \
+    python3-colcon-common-extensions \
+    ros-jazzy-rviz2 \
+    ros-jazzy-nav2-msgs \
+    ros-jazzy-nav2-amcl \
+    ros-jazzy-nav2-map-server \
+    ros-jazzy-nav2-planner \
+    ros-jazzy-nav2-bringup \
+    ros-jazzy-nav2-bt-navigator \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV PROJECT_PATH=/ros2_ws/src/turtlebot4_simulation
+
+# Copy all directories except docker
+COPY . ${PROJECT_PATH}/
+RUN rm -rf ${PROJECT_PATH}/docker
+
+# Build ROS2 workspace
+RUN source /opt/ros/jazzy/setup.bash \
+    && cd /ros2_ws && colcon build
+
+# Prepare the entrypoint
+COPY docker/ros_entrypoint.sh /ros_entrypoint.sh
+RUN chmod +x /ros_entrypoint.sh
+WORKDIR /ros2_ws

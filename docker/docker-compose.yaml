@@ -1,0 +1,17 @@
+services:
+  tb4_simulation:
+    image: tb4_simulation:latest
+    container_name: tb4_simulation
+    privileged: true
+    network_mode: "host"
+    environment:
+      QT_X11_NO_MITSHM: 1
+      ROS_DOMAIN_ID: 0
+      DISPLAY: ${DISPLAY}
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - ../tb4_bringup:/ros2_ws/src/turtlebot4_simulation/tb4_bringup
+      - ../tb4_description:/ros2_ws/src/turtlebot4_simulation/tb4_description
+      - ../tb4_navigation:/ros2_ws/src/turtlebot4_simulation/tb4_navigation
+      - ../tb4_gazebo:/ros2_ws/src/turtlebot4_simulation/tb4_gazebo
+    entrypoint: ["/ros_entrypoint.sh"]
