@@ -490,7 +490,7 @@ Visualization Manager:
       Binary representation: false
       Binary threshold: 100
       Class: rviz_default_plugins/Map
-      Color Scheme: map
+      Color Scheme: costmap
       Draw Behind: false
       Enabled: true
       Name: GlobalCostmap
@@ -513,7 +513,7 @@ Visualization Manager:
       Binary representation: false
       Binary threshold: 100
       Class: rviz_default_plugins/Map
-      Color Scheme: map
+      Color Scheme: costmap
       Draw Behind: false
       Enabled: true
       Name: LocalCostmap
@@ -626,25 +626,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/XYOrbit
-      Distance: 13.042213439941406
+      Distance: 14.567765235900879
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -2.2567358016967773
-        Y: -0.4541053771972656
-        Z: 6.049277726560831e-05
+        X: -1.832352638244629
+        Y: -0.3237142562866211
+        Z: 4.428031388670206e-05
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.9847971200942993
+      Pitch: 1.0147970914840698
       Target Frame: <Fixed Frame>
       Value: XYOrbit (rviz_default_plugins)
-      Yaw: 3.1073732376098633
+      Yaw: 3.122373104095459
     Saved: ~
 Window Geometry:
   Cam:

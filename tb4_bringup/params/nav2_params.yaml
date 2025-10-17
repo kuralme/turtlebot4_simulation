@@ -1,4 +1,3 @@
-
 amcl:
   ros__parameters:
     alpha1: 0.2
@@ -38,33 +37,11 @@ amcl:
     z_rand: 0.5
     z_short: 0.05
     scan_topic: scan
-
-bt_navigator:
-  ros__parameters:
-    global_frame: map
-    robot_base_frame: base_link
-    odom_topic: odom
-    bt_loop_duration: 10
-    default_server_timeout: 20
-    wait_for_service_timeout: 1000
-    action_server_result_timeout: 900.0
-    navigators: ["navigate_to_pose", "navigate_through_poses"]
-    navigate_to_pose:
-      plugin: "nav2_bt_navigator::NavigateToPoseNavigator"
-    navigate_through_poses:
-      plugin: "nav2_bt_navigator::NavigateThroughPosesNavigator"
-    # 'default_nav_through_poses_bt_xml' and 'default_nav_to_pose_bt_xml' are use defaults:
-    # nav2_bt_navigator/navigate_to_pose_w_replanning_and_recovery.xml
-    # nav2_bt_navigator/navigate_through_poses_w_replanning_and_recovery.xml
-    # They can be set here or via a RewrittenYaml remap from a parent launch file to Nav2.
-
-    # plugin_lib_names is used to add custom BT plugins to the executor (vector of strings).
-    # Built-in plugins are added automatically
-    # plugin_lib_names: []
-
-    error_code_names:
-      - compute_path_error_code
-      - follow_path_error_code
+    set_initial_pose: true
+    initial_pose_x: -10.0
+    initial_pose_y: 0.0
+    initial_pose_z: 0.1
+    initial_pose_yaw: 0.0
 
 controller_server:
   ros__parameters:
@@ -103,6 +80,7 @@ controller_server:
       ax_max: 3.0
       ax_min: -3.0
       ay_max: 3.0
+      ay_min: -3.0
       az_max: 3.5
       vx_std: 0.2
       vy_std: 0.2
@@ -151,8 +129,9 @@ controller_server:
         enabled: true
         cost_power: 1
         cost_weight: 3.81
+        near_collision_cost: 253
         critical_cost: 300.0
-        consider_footprint: true
+        consider_footprint: false
         collision_cost: 1000000.0
         near_goal_distance: 1.0
         trajectory_point_step: 2
@@ -212,13 +191,7 @@ local_costmap:
         mark_threshold: 0
         observation_sources: scan
         scan:
-          # A relative topic will be appended to the parent of the local_costmap namespace.
-          # For example:
-          #   * User chosen namespace is `tb4`.
-          #   * User chosen topic is `scan`.
-          #   * Topic will be remapped to `/tb4/scan` without `local_costmap`.
-          #   * Use global topic `/scan` if you do not wish the node namespace to apply
-          topic: scan
+          topic: /scan
           max_obstacle_height: 2.0
           clearing: True
           marking: True
@@ -248,13 +221,7 @@ global_costmap:
         enabled: True
         observation_sources: scan
         scan:
-          # A relative topic will be appended to the parent of the global_costmap namespace.
-          # For example:
-          #   * User chosen namespace is `tb4`.
-          #   * User chosen topic is `scan`.
-          #   * Topic will be remapped to `/tb4/scan` without `global_costmap`.
-          #   * Use global topic `/scan` if you do not wish the node namespace to apply
-          topic: scan
+          topic: /scan
           max_obstacle_height: 2.0
           clearing: True
           marking: True
@@ -271,20 +238,19 @@ global_costmap:
         cost_scaling_factor: 3.0
         inflation_radius: 0.7
       always_send_full_costmap: True
-
-# The yaml_filename does not need to be specified since it going to be set by defaults in launch.
-# If you'd rather set it in the yaml, remove the default "map" value in the tb3_simulation_launch.py
-# file & provide full path to map below. If CLI map configuration or launch default is provided, that will be used.
-# map_server:
-#   ros__parameters:
-#     yaml_filename: ""
-
-map_saver:
-  ros__parameters:
-    save_map_timeout: 5.0
-    free_thresh_default: 0.25
-    occupied_thresh_default: 0.65
-    map_subscribe_transient_local: True
+      # For Keepout Zones
+      #filters: ["keepout_filter"]
+      # For Speed Limits
+      # keepout_filter:
+      #   plugin: "nav2_costmap_2d::KeepoutFilter"
+      #   enabled: True
+      #   filter_info_topic: "/costmap_filter_info"
+      # filters: ["speed_filter"]
+      # speed_filter:
+      #   plugin: "nav2_costmap_2d::SpeedFilter"
+      #   enabled: True
+      #   filter_info_topic: "/costmap_filter_info"
+      #   speed_limit_topic: "/speed_limit"
 
 planner_server:
   ros__parameters:
@@ -333,119 +299,190 @@ behavior_server:
     min_rotational_vel: 0.4
     rotational_acc_lim: 3.2
 
-waypoint_follower:
+bt_navigator:
   ros__parameters:
-    loop_rate: 20
-    stop_on_failure: false
+    global_frame: map
+    robot_base_frame: base_link
+    odom_topic: /odom
+    bt_loop_duration: 10
+    default_server_timeout: 20
+    wait_for_service_timeout: 1000
     action_server_result_timeout: 900.0
-    waypoint_task_executor_plugin: "wait_at_waypoint"
-    wait_at_waypoint:
-      plugin: "nav2_waypoint_follower::WaitAtWaypoint"
-      enabled: True
-      waypoint_pause_duration: 200
+    navigators: ["navigate_to_pose", "navigate_through_poses"]
+    navigate_to_pose:
+      plugin: "nav2_bt_navigator::NavigateToPoseNavigator"
+    navigate_through_poses:
+      plugin: "nav2_bt_navigator::NavigateThroughPosesNavigator"
+    # 'default_nav_through_poses_bt_xml' and 'default_nav_to_pose_bt_xml' are use defaults:
+    # nav2_bt_navigator/navigate_to_pose_w_replanning_and_recovery.xml
+    # nav2_bt_navigator/navigate_through_poses_w_replanning_and_recovery.xml
+    # They can be set here or via a RewrittenYaml remap from a parent launch file to Nav2.
 
-velocity_smoother:
-  ros__parameters:
-    smoothing_frequency: 20.0
-    scale_velocities: False
-    feedback: "OPEN_LOOP"
-    max_velocity: [0.5, 0.0, 2.0]
-    min_velocity: [-0.5, 0.0, -2.0]
-    max_accel: [2.5, 0.0, 3.2]
-    max_decel: [-2.5, 0.0, -3.2]
-    odom_topic: "odom"
-    odom_duration: 0.1
-    deadband_velocity: [0.0, 0.0, 0.0]
-    velocity_timeout: 1.0
+    # plugin_lib_names is used to add custom BT plugins to the executor (vector of strings).
+    # Built-in plugins are added automatically
+    # plugin_lib_names: []
 
-collision_monitor:
-  ros__parameters:
-    base_frame_id: "base_footprint"
-    odom_frame_id: "odom"
-    cmd_vel_in_topic: "cmd_vel_smoothed"
-    cmd_vel_out_topic: "cmd_vel"
-    state_topic: "collision_monitor_state"
-    transform_tolerance: 0.2
-    source_timeout: 1.0
-    base_shift_correction: True
-    stop_pub_timeout: 2.0
-    # Polygons represent zone around the robot for "stop", "slowdown" and "limit" action types,
-    # and robot footprint for "approach" action type.
-    polygons: ["FootprintApproach"]
-    FootprintApproach:
-      type: "polygon"
-      action_type: "approach"
-      footprint_topic: "local_costmap/published_footprint"
-      time_before_collision: 1.2
-      simulation_time_step: 0.1
-      min_points: 6
-      visualize: False
-      enabled: True
-    observation_sources: ["scan"]
-    scan:
-      type: "scan"
-      topic: "scan"
-      min_height: 0.15
-      max_height: 2.0
-      enabled: True
+    error_code_names:
+      - compute_path_error_code
+      - follow_path_error_code
 
-docking_server:
-  ros__parameters:
-    controller_frequency: 50.0
-    initial_perception_timeout: 5.0
-    wait_charge_timeout: 5.0
-    dock_approach_timeout: 30.0
-    undock_linear_tolerance: 0.05
-    undock_angular_tolerance: 0.1
-    max_retries: 3
-    base_frame: "base_link"
-    fixed_frame: "odom"
-    dock_backwards: false
-    dock_prestaging_tolerance: 0.5
 
-    # Types of docks
-    dock_plugins: ['simple_charging_dock']
-    simple_charging_dock:
-      plugin: 'opennav_docking::SimpleChargingDock'
-      docking_threshold: 0.05
-      staging_x_offset: -0.7
-      use_external_detection_pose: true
-      use_battery_status: false # true
-      use_stall_detection: false # true
+# The yaml_filename does not need to be specified since it going to be set by defaults in launch.
+# If you'd rather set it in the yaml, remove the default "map" value in the tb3_simulation_launch.py
+# file & provide full path to map below. If CLI map configuration or launch default is provided, that will be used.
+# map_server:
+#   ros__parameters:
+#     yaml_filename: ""
 
-      external_detection_timeout: 1.0
-      external_detection_translation_x: -0.18
-      external_detection_translation_y: 0.0
-      external_detection_rotation_roll: -1.57
-      external_detection_rotation_pitch: -1.57
-      external_detection_rotation_yaw: 0.0
-      filter_coef: 0.1
+# map_saver:
+#   ros__parameters:
+#     save_map_timeout: 5.0
+#     free_thresh_default: 0.25
+#     occupied_thresh_default: 0.65
+#     map_subscribe_transient_local: True
 
-    # Dock instances
-    # The following example illustrates configuring dock instances.
-    # docks: ['home_dock']  # Input your docks here
-    # home_dock:
-    #   type: 'simple_charging_dock'
-    #   frame: map
-    #   pose: [0.0, 0.0, 0.0]
+# waypoint_follower:
+#   ros__parameters:
+#     loop_rate: 20
+#     stop_on_failure: false
+#     action_server_result_timeout: 900.0
+#     waypoint_task_executor_plugin: "wait_at_waypoint"
+#     wait_at_waypoint:
+#       plugin: "nav2_waypoint_follower::WaitAtWaypoint"
+#       enabled: True
+#       waypoint_pause_duration: 200
 
-    controller:
-      k_phi: 3.0
-      k_delta: 2.0
-      v_linear_min: 0.15
-      v_linear_max: 0.15
-      use_collision_detection: true
-      costmap_topic: "/local_costmap/costmap_raw"
-      footprint_topic: "/local_costmap/published_footprint"
-      transform_tolerance: 0.1
-      projection_time: 5.0
-      simulation_step: 0.1
-      dock_collision_threshold: 0.3
+# route_server:
+#   ros__parameters:
+#     # The graph_filepath does not need to be specified since it going to be set by defaults in launch.
+#     # If you'd rather set it in the yaml, remove the default "graph" value in the launch file(s).
+#     # file & provide full path to map below. If graph config or launch default is provided, it is used
+#     # graph_filepath: $(find-pkg-share nav2_route)/graphs/aws_graph.geojson
+#     boundary_radius_to_achieve_node: 1.0
+#     radius_to_achieve_node: 2.0
+#     smooth_corners: true
+#     operations: ["AdjustSpeedLimit", "ReroutingService", "CollisionMonitor"]
+#     ReroutingService:
+#       plugin: "nav2_route::ReroutingService"
+#     AdjustSpeedLimit:
+#       plugin: "nav2_route::AdjustSpeedLimit"
+#     CollisionMonitor:
+#       plugin: "nav2_route::CollisionMonitor"
+#       max_collision_dist: 3.0
+#     edge_cost_functions: ["DistanceScorer", "CostmapScorer"]
+#     DistanceScorer:
+#       plugin: "nav2_route::DistanceScorer"
+#     CostmapScorer:
+#       plugin: "nav2_route::CostmapScorer"
 
-loopback_simulator:
-  ros__parameters:
-    base_frame_id: "base_footprint"
-    odom_frame_id: "odom"
-    map_frame_id: "map"
-    scan_frame_id: "base_scan"  # tb4_loopback_simulator.launch.py remaps to 'rplidar_link'
-    update_duration: 0.02
+# velocity_smoother:
+#   ros__parameters:
+#     smoothing_frequency: 20.0
+#     scale_velocities: False
+#     feedback: "OPEN_LOOP"
+#     max_velocity: [0.5, 0.0, 2.0]
+#     min_velocity: [-0.5, 0.0, -2.0]
+#     max_accel: [2.5, 0.0, 3.2]
+#     max_decel: [-2.5, 0.0, -3.2]
+#     odom_topic: "odom"
+#     odom_duration: 0.1
+#     deadband_velocity: [0.0, 0.0, 0.0]
+#     velocity_timeout: 1.0
+
+# collision_monitor:
+#   ros__parameters:
+#     base_frame_id: "base_footprint"
+#     odom_frame_id: "odom"
+#     cmd_vel_in_topic: "cmd_vel_smoothed"
+#     cmd_vel_out_topic: "cmd_vel"
+#     state_topic: "collision_monitor_state"
+#     transform_tolerance: 0.2
+#     source_timeout: 1.0
+#     base_shift_correction: True
+#     stop_pub_timeout: 2.0
+#     # Polygons represent zone around the robot for "stop", "slowdown" and "limit" action types,
+#     # and robot footprint for "approach" action type.
+#     polygons: ["FootprintApproach"]
+#     FootprintApproach:
+#       type: "polygon"
+#       action_type: "approach"
+#       footprint_topic: "/local_costmap/published_footprint"
+#       time_before_collision: 1.2
+#       simulation_time_step: 0.1
+#       min_points: 6
+#       visualize: False
+#       enabled: True
+#     observation_sources: ["scan"]
+#     scan:
+#       type: "scan"
+#       topic: "scan"
+#       min_height: 0.15
+#       max_height: 2.0
+#       enabled: True
+
+# docking_server:
+#   ros__parameters:
+#     controller_frequency: 50.0
+#     initial_perception_timeout: 5.0
+#     wait_charge_timeout: 5.0
+#     dock_approach_timeout: 30.0
+#     undock_linear_tolerance: 0.05
+#     undock_angular_tolerance: 0.1
+#     max_retries: 3
+#     base_frame: "base_link"
+#     fixed_frame: "odom"
+#     dock_backwards: false
+#     dock_prestaging_tolerance: 0.5
+
+#     # Types of docks
+#     dock_plugins: ['simple_charging_dock']
+#     simple_charging_dock:
+#       plugin: 'opennav_docking::SimpleChargingDock'
+#       docking_threshold: 0.05
+#       staging_x_offset: -0.7
+#       use_external_detection_pose: true
+#       use_battery_status: false # true
+#       use_stall_detection: false # true
+
+#       external_detection_timeout: 1.0
+#       external_detection_translation_x: -0.18
+#       external_detection_translation_y: 0.0
+#       external_detection_rotation_roll: -1.57
+#       external_detection_rotation_pitch: -1.57
+#       external_detection_rotation_yaw: 0.0
+#       filter_coef: 0.1
+
+#     # Dock instances
+#     # The following example illustrates configuring dock instances.
+#     # docks: ['home_dock']  # Input your docks here
+#     # home_dock:
+#     #   type: 'simple_charging_dock'
+#     #   frame: map
+#     #   pose: [0.0, 0.0, 0.0]
+
+#     controller:
+#       k_phi: 3.0
+#       k_delta: 2.0
+#       v_linear_min: 0.15
+#       v_linear_max: 0.15
+#       use_collision_detection: true
+#       costmap_topic: "local_costmap/costmap_raw"
+#       footprint_topic: "local_costmap/published_footprint"
+#       transform_tolerance: 0.1
+#       projection_time: 5.0
+#       simulation_step: 0.1
+#       dock_collision_threshold: 0.3
+
+# loopback_simulator:
+#   ros__parameters:
+#     base_frame_id: "base_footprint"
+#     odom_frame_id: "odom"
+#     map_frame_id: "map"
+#     scan_frame_id: "base_scan"  # tb4_loopback_simulator.launch.py remaps to 'rplidar_link'
+#     update_duration: 0.02
+#     scan_range_min: 0.05
+#     scan_range_max: 30.0
+#     scan_angle_min: -3.1415
+#     scan_angle_max: 3.1415
+#     scan_angle_increment: 0.02617
+#     scan_use_inf: true

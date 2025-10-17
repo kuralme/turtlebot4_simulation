@@ -17,7 +17,7 @@ def generate_launch_description():
     
     map_config = os.path.join(map_dir, 'maps', 'depot.yaml')
     rviz_config = os.path.join(bringup_dir, 'rviz', 'depot_config.rviz')
-    nav_config = os.path.join(bringup_dir, 'params', 'tb4_nav2_mppi.yaml')
+    nav_config = os.path.join(bringup_dir, 'params', 'nav2_params.yaml')
     
     # Create the launch configuration variables
     namespace = LaunchConfiguration('namespace')
@@ -93,11 +93,11 @@ def generate_launch_description():
             'autostart': autostart,
             'use_sim_time': use_sim_time,
             'use_respawn': use_respawn,
-            # 'params_config': params_file,
+            'params_config': params_file,
         }.items()
     )
     delayed_nav = TimerAction(
-        period=7.0, # seconds
+        period=10.0, # seconds
         actions=[tb4_navigation]
     )
 
