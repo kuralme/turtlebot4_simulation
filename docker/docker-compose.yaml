@@ -15,3 +15,4 @@ services:
       - ../tb4_navigation:/ros2_ws/src/turtlebot4_simulation/tb4_navigation
       - ../tb4_gazebo:/ros2_ws/src/turtlebot4_simulation/tb4_gazebo
     entrypoint: ["/ros_entrypoint.sh"]
+    command: ["ros2 launch tb4_bringup demo_depot_nav2.launch.py"]

@@ -37,8 +37,8 @@ build-overlay: build-base
 .PHONY: clean
 clean:
 	@echo "Removing old Docker containers of the image..."
-	@docker ps -a -q --filter "ancestor=${IMAGE_NAME}" | xargs -r docker rm
 	@docker compose down --remove-orphans
+	@docker ps -a -q --filter "ancestor=${IMAGE_NAME}" | xargs -r docker rm
 
 # Docker compose container running script
 # Allows Docker containers to access the X server required for GUI applications
@@ -46,7 +46,7 @@ clean:
 start_container:
 	@echo "Running the container..."
 	@xhost +local:docker
-	@docker compose run ${IMAGE_NAME} bash
+	@docker compose up
 
 # Start the a new terminal in the container
 .PHONY: terminal

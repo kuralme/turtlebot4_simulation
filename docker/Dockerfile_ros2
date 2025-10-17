@@ -14,15 +14,13 @@ RUN apt update && apt upgrade -y && apt install -y \
 
 ENV PROJECT_PATH=/ros2_ws/src/turtlebot4_simulation
 
-# Copy all directories except docker
+# Copy all directories
 COPY . ${PROJECT_PATH}/
+COPY docker/ros_entrypoint.sh /ros_entrypoint.sh
 RUN rm -rf ${PROJECT_PATH}/docker
 
 # Build ROS2 workspace
 RUN source /opt/ros/jazzy/setup.bash \
     && cd /ros2_ws && colcon build
 
-# Prepare the entrypoint
-COPY docker/ros_entrypoint.sh /ros_entrypoint.sh
-RUN chmod +x /ros_entrypoint.sh
 WORKDIR /ros2_ws
